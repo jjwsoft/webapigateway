@@ -1,0 +1,22 @@
+# 研发环境
+
+spring:
+  cloud:
+    gateway:
+      routes:   # 路由配置
+        - id: aftv2                     # 路由名称
+          uri: http://127.0.0.1:8081    # 路由目标
+          filters:
+            - PrefixPath=/aftv2         # 路由到目标时，追加这个URL前缀。如用户访问此网关时请求为 /test ，则最终路由目标路径为 http://127.0.0.1:8081/aftv2/test
+          predicates:                   # 此路由条件成立的多个断言，为and关系
+            - name: Condition           # 使用动态表达式断言器
+              args:
+                conditions:             # 一个数组，建议将高频的往前放来提高性能，也可以组合Path等其它断言器来提高性能，这个断言器总是需要读body，会有额外损耗
+                  - "request.body.binNumber == '78986'"
+                  - "request.body.virtual_account.startsWith('828')"
+        - id: default                   # 默认路由，建议总是有一个默认路由来兜底
+          uri: http://127.0.0.1:8081
+          filters:
+            - PrefixPath=/aftv1
+          predicates:
+            - Path=/**
